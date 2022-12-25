@@ -1,0 +1,32 @@
+.container {
+  color: #fff;
+  background-color: rgba(#e57373, 0.6);
+  text-transform: capitalize;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-right: 12px;
+  font-weight: 600;
+  transition: 0.2s;
+  border: 1px solid transparent;
+
+  &:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
+
+  &:hover {
+    border: 1px solid rgba(#e57373, 0.6);
+    background: none;
+    color: rgba(#e57373, 0.6);
+  }
+}
+
+.containerActive {
+  background-color: #e57373;
+  border: 1px solid #e57373;
+
+  &:hover {
+    background: none;
+    color: #e57373;
+  }
+}

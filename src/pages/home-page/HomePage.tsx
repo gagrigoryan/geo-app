@@ -5,9 +5,9 @@ import Konva from "konva";
 import { IPoint } from "../../domain/entities/point";
 import Polygon from "../../components/polygon";
 import Point from "../../components/point";
-import clsx from "clsx";
 import { isPointBelongPolygon } from "../../utils/isPointBelongPolygon";
 import { useLayerPolygon } from "../../hooks/useLayerPolygon";
+import Button from "../../button";
 
 enum PageMode {
   CreatePolygon = "create_polygon",
@@ -53,22 +53,16 @@ const HomePage: React.FC = () => {
     <main className={styles.container}>
       <div className={styles.actionWrapper}>
         {Object.values(PageMode).map((modeItem) => (
-          <button
+          <Button
             onClick={() => setMode(modeItem)}
-            className={clsx(
-              styles.button,
-              modeItem === mode && styles.buttonActive
-            )}
+            isActive={modeItem === mode}
           >
             {modeItem.split("_").join(" ")}
-          </button>
+          </Button>
         ))}
-        <button
-          onClick={onCheckPointsHandler}
-          className={clsx(styles.button, styles.buttonActive)}
-        >
+        <Button onClick={onCheckPointsHandler} isActive>
           Check Points
-        </button>
+        </Button>
       </div>
       <CanvasLayer onClick={onLayerClickHandler}>
         <Polygon onChange={setPolygon} {...polygon} />

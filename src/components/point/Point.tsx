@@ -5,10 +5,17 @@ import { IPoint } from "../../domain/entities/point";
 
 type PointProps = IPoint & {
   onChange?: (point: IPoint) => void;
+  draggable?: boolean;
   color?: string;
 };
 
-const Point: React.FC<PointProps> = ({ x, y, onChange, color = "#e57373" }) => {
+const Point: React.FC<PointProps> = ({
+  x,
+  y,
+  onChange,
+  draggable = true,
+  color = "#e57373",
+}) => {
   const [isHovered, setHovered] = useState<boolean>(false);
 
   const onDragMoveHandler = (event: Konva.KonvaEventObject<DragEvent>) => {
@@ -37,7 +44,7 @@ const Point: React.FC<PointProps> = ({ x, y, onChange, color = "#e57373" }) => {
         radius={isHovered ? 6 : 4}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
-        draggable
+        draggable={draggable}
         onDragMove={onDragMoveHandler}
       />
     </>
