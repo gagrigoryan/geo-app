@@ -8,6 +8,12 @@ import Point from "../../components/point";
 import { isPointBelongPolygon } from "../../utils/isPointBelongPolygon";
 import { useLayerPolygon } from "../../hooks/useLayerPolygon";
 import Button from "../../button";
+import { IPolygon } from "../../domain/entities/polygon";
+import { ILine } from "../../domain/entities/line";
+import {
+  getPointPositionRelativeLine,
+  PointPosition,
+} from "../../utils/getPointPositionRelativeLine";
 
 enum PageMode {
   CreatePolygon = "create_polygon",
@@ -18,8 +24,39 @@ type PointExpanded = IPoint & {
   isBelong?: boolean;
 };
 
+type PolygonExpanded = IPolygon & {
+  polarCenter?: IPoint;
+  sortedPointsByPolar?: IPoint[];
+};
+
+function squaredPolar(point: IPoint, center: IPoint): IPoint {
+  return {
+    x: Math.atan2(point.y - center.y, point.x - center.x),
+    y: (point.x - center.x) ** 2 + (point.y - center.y) ** 2,
+  };
+}
+
+function polySort(polygon: IPolygon): { points: IPoint[]; center: IPoint } {
+  const { points } = polygon;
+  let center = {
+    x: points.reduce((sum, p) => sum + p.x, 0) / points.length,
+    y: points.reduce((sum, p) => sum + p.y, 0) / points.length,
+  };
+
+  const result = [...points].sort((a, b) => {
+    const firstPolar = squaredPolar(a, center);
+    const secondPolar = squaredPolar(b, center);
+    return firstPolar.x - secondPolar.x || firstPolar.y - secondPolar.y;
+  });
+  return {
+    points: result,
+    center,
+  };
+}
+
 const HomePage: React.FC = () => {
-  const { polygon, setPolygon, onLayerClick } = useLayerPolygon();
+  const { polygon, setPolygon, onLayerClick } =
+    useLayerPolygon<PolygonExpanded>();
   const [mode, setMode] = useState<PageMode>(PageMode.CreatePolygon);
   const [pointList, setPointList] = useState<PointExpanded[]>([]);
 
@@ -49,6 +86,58 @@ const HomePage: React.FC = () => {
     );
   };
 
+  const onAngularTestHandler = () => {
+    const { center, points: sortedPointsByPolar } = polySort(polygon);
+    setPolygon({
+      ...polygon,
+      polarCenter: center,
+      sortedPointsByPolar,
+    });
+    const { length } = sortedPointsByPolar;
+
+    let calculatedVector: ILine | null = null;
+
+    for (let index = 0; index < length; ++index) {
+      const currentPoint = sortedPointsByPolar[index];
+      const nextPoint = sortedPointsByPolar[(index + 1 + length) % length];
+
+      const startLine: ILine = { start: center, finish: currentPoint };
+      const finishLine: ILine = { start: center, finish: nextPoint };
+      const startPointPosition = getPointPositionRelativeLine(
+        startLine,
+        pointList[0]
+      );
+      const finishPointPosition = getPointPositionRelativeLine(
+        finishLine,
+        pointList[0]
+      );
+      if (
+        startPointPosition === PointPosition.Right &&
+        finishPointPosition === PointPosition.Left
+      ) {
+        calculatedVector = { start: currentPoint, finish: nextPoint };
+        break;
+      }
+    }
+    if (!calculatedVector) {
+      return;
+    }
+    const resultPointPosition = getPointPositionRelativeLine(
+      calculatedVector,
+      pointList[0]
+    );
+    setPointList(
+      pointList.map((pointItem, index) =>
+        index === 0
+          ? {
+              ...pointItem,
+              isBelong: resultPointPosition === PointPosition.Right,
+            }
+          : pointItem
+      )
+    );
+  };
+
   return (
     <main className={styles.container}>
       <div className={styles.actionWrapper}>
@@ -63,9 +152,15 @@ const HomePage: React.FC = () => {
         <Button onClick={onCheckPointsHandler} isActive>
           Check Points
         </Button>
+        <Button onClick={onAngularTestHandler} isActive>
+          Angular Test
+        </Button>
       </div>
       <CanvasLayer onClick={onLayerClickHandler}>
         <Polygon onChange={setPolygon} {...polygon} />
+        {polygon?.polarCenter && (
+          <Point {...polygon.polarCenter} draggable={false} color="#00897b" />
+        )}
         {pointList.map((point, index) => (
           <Point
             key={index.toString()}

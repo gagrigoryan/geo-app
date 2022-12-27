@@ -4,14 +4,15 @@ import { useState } from "react";
 import Konva from "konva";
 import { IPoint } from "../domain/entities/point";
 
-type LayerPolygonHook = {
-  polygon: IPolygon;
-  setPolygon: React.Dispatch<React.SetStateAction<IPolygon>>;
+type LayerPolygonHook<T extends IPolygon> = {
+  polygon: T;
+  setPolygon: React.Dispatch<React.SetStateAction<T>>;
   onLayerClick: (event: Konva.KonvaEventObject<MouseEvent>) => void;
 };
 
-export const useLayerPolygon = (): LayerPolygonHook => {
-  const [polygon, setPolygon] = useState<IPolygon>({
+export const useLayerPolygon = <T extends IPolygon>(): LayerPolygonHook<T> => {
+  const [polygon, setPolygon] = useState<T>({
+    // @ts-ignore
     id: 1,
     points: [],
   });
