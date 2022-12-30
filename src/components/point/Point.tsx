@@ -2,6 +2,7 @@ import Konva from "konva";
 import React, { useState } from "react";
 import { Circle, Text } from "react-konva";
 import { IPoint } from "../../domain/entities/point";
+import { getFormattedNumber } from "../../utils/getFormattedNumber";
 
 type PointProps = IPoint & {
   onChange?: (point: IPoint) => void;
@@ -32,7 +33,7 @@ const Point: React.FC<PointProps> = ({
           y={y}
           offsetX={28}
           offsetY={24}
-          text={`(${x}, ${y})`}
+          text={`(${getFormattedNumber(x)}, ${getFormattedNumber(y)})`}
           fill={color}
         />
       )}

@@ -5,15 +5,13 @@ import Konva from "konva";
 import { IPoint } from "../../domain/entities/point";
 import Polygon from "../../components/polygon";
 import Point from "../../components/point";
-import { isPointBelongPolygon } from "../../utils/isPointBelongPolygon";
+import {
+  isPointBelongPolygon,
+  isPointBelongPolygonAngularTest,
+} from "../../utils/isPointBelongPolygon";
 import { useLayerPolygon } from "../../hooks/useLayerPolygon";
 import Button from "../../button";
-import { IPolygon } from "../../domain/entities/polygon";
-import { ILine } from "../../domain/entities/line";
-import {
-  getPointPositionRelativeLine,
-  PointPosition,
-} from "../../utils/getPointPositionRelativeLine";
+import { IPolygon, TExpandedPolygon } from "../../domain/entities/polygon";
 
 enum PageMode {
   CreatePolygon = "create_polygon",
@@ -22,11 +20,6 @@ enum PageMode {
 
 type PointExpanded = IPoint & {
   isBelong?: boolean;
-};
-
-type PolygonExpanded = IPolygon & {
-  polarCenter?: IPoint;
-  sortedPointsByPolar?: IPoint[];
 };
 
 function squaredPolar(point: IPoint, center: IPoint): IPoint {
@@ -56,7 +49,7 @@ function polySort(polygon: IPolygon): { points: IPoint[]; center: IPoint } {
 
 const HomePage: React.FC = () => {
   const { polygon, setPolygon, onLayerClick } =
-    useLayerPolygon<PolygonExpanded>();
+    useLayerPolygon<TExpandedPolygon>();
   const [mode, setMode] = useState<PageMode>(PageMode.CreatePolygon);
   const [pointList, setPointList] = useState<PointExpanded[]>([]);
 
@@ -88,53 +81,18 @@ const HomePage: React.FC = () => {
 
   const onAngularTestHandler = () => {
     const { center, points: sortedPointsByPolar } = polySort(polygon);
-    setPolygon({
+    const currentPolygon: TExpandedPolygon = {
       ...polygon,
       polarCenter: center,
       sortedPointsByPolar,
-    });
-    const { length } = sortedPointsByPolar;
+    };
+    setPolygon(currentPolygon);
 
-    let calculatedVector: ILine | null = null;
-
-    for (let index = 0; index < length; ++index) {
-      const currentPoint = sortedPointsByPolar[index];
-      const nextPoint = sortedPointsByPolar[(index + 1 + length) % length];
-
-      const startLine: ILine = { start: center, finish: currentPoint };
-      const finishLine: ILine = { start: center, finish: nextPoint };
-      const startPointPosition = getPointPositionRelativeLine(
-        startLine,
-        pointList[0]
-      );
-      const finishPointPosition = getPointPositionRelativeLine(
-        finishLine,
-        pointList[0]
-      );
-      if (
-        startPointPosition === PointPosition.Right &&
-        finishPointPosition === PointPosition.Left
-      ) {
-        calculatedVector = { start: currentPoint, finish: nextPoint };
-        break;
-      }
-    }
-    if (!calculatedVector) {
-      return;
-    }
-    const resultPointPosition = getPointPositionRelativeLine(
-      calculatedVector,
-      pointList[0]
-    );
     setPointList(
-      pointList.map((pointItem, index) =>
-        index === 0
-          ? {
-              ...pointItem,
-              isBelong: resultPointPosition === PointPosition.Right,
-            }
-          : pointItem
-      )
+      pointList.map((point) => ({
+        ...point,
+        isBelong: isPointBelongPolygonAngularTest(polygon, point) ?? false,
+      }))
     );
   };
 
