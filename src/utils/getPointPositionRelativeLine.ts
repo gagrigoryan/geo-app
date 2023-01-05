@@ -9,11 +9,13 @@ export enum PointPosition {
 export const getPointPositionRelativeLine = (
   line: ILine,
   point: IPoint
-): PointPosition => {
+): PointPosition | null => {
   const { start, finish } = line;
-  const isRight: boolean =
+  const power: number =
     (finish.x - start.x) * (point.y - start.y) -
-      (finish.y - start.y) * (point.x - start.x) >
-    0;
-  return isRight ? PointPosition.Right : PointPosition.Left;
+    (finish.y - start.y) * (point.x - start.x);
+  if (power === 0) {
+    return null;
+  }
+  return power > 0 ? PointPosition.Right : PointPosition.Left;
 };

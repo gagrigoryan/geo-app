@@ -2,12 +2,16 @@ import React, { memo, useState } from "react";
 import styles from "./generatePolygon.module.scss";
 import CanvasLayer from "../../components/canvas-layer";
 import Button from "../../button";
-import { generatePolygon } from "../../utils/generatePolygon";
+import {
+  generateConvexPolygon,
+  generatePolygon,
+} from "../../utils/generatePolygon";
 import { IPolygon } from "../../domain/entities/polygon";
 import Polygon from "../../components/polygon";
 import { IPoint } from "../../domain/entities/point";
 import Konva from "konva";
 import Point from "../../components/point";
+import { isPolygonConvex } from "../../utils/isPolygonConvex";
 
 const GeneratePolygon: React.FC = () => {
   const [minAngle, setMinAngle] = useState<number>(10);
@@ -26,6 +30,25 @@ const GeneratePolygon: React.FC = () => {
       maxAngle
     );
     setPolygon(generatedPolygon);
+  };
+
+  const onGenerateConvexClick = () => {
+    const generatedPolygon = generateConvexPolygon(
+      centerPoint!,
+      minDistance,
+      maxDistance,
+      minAngle,
+      maxAngle
+    );
+    setPolygon(generatedPolygon);
+  };
+
+  const onCheckConvexClick = () => {
+    const isConvex = isPolygonConvex(polygon!);
+    setPolygon({
+      ...polygon,
+      isConvex,
+    } as IPolygon);
   };
 
   const onLayerClick = (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -59,7 +82,6 @@ const GeneratePolygon: React.FC = () => {
             />
           </label>
         </div>
-
         <div className={styles.rangeWrapper}>
           <label className={styles.inputContainer}>
             Angle min ({minAngle}&deg;)
@@ -91,9 +113,35 @@ const GeneratePolygon: React.FC = () => {
         >
           Generate
         </Button>
+        <Button
+          disabled={centerPoint == null}
+          onClick={onGenerateConvexClick}
+          isActive
+        >
+          Generate Convex
+        </Button>
+        <Button
+          disabled={polygon == null}
+          onClick={onCheckConvexClick}
+          isActive
+        >
+          Check Convex
+        </Button>
       </div>
       <CanvasLayer onClick={onLayerClick}>
-        {polygon != null && <Polygon {...polygon} onChange={setPolygon} />}
+        {polygon != null && (
+          <Polygon
+            {...polygon}
+            onChange={setPolygon}
+            color={
+              polygon.isConvex == null
+                ? undefined
+                : polygon.isConvex
+                ? "#388e3c"
+                : "#c2185b"
+            }
+          />
+        )}
         {centerPoint != null && (
           <Point {...centerPoint} color="#78909c" onChange={setCenterPoint} />
         )}

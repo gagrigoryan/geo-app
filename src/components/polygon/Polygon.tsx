@@ -7,9 +7,15 @@ import { IPoint } from "../../domain/entities/point";
 
 type PolygonProps = IPolygon & {
   onChange?: (polygon: IPolygon) => void;
+  color?: string;
 };
 
-const Polygon: React.FC<PolygonProps> = ({ id, points, onChange }) => {
+const Polygon: React.FC<PolygonProps> = ({
+  id,
+  points,
+  onChange,
+  color = "#c3c7cc",
+}) => {
   const onPointChangeHandler = (sourcePoint: IPoint, sourceIndex: number) => {
     onChange?.({
       id,
@@ -25,7 +31,7 @@ const Polygon: React.FC<PolygonProps> = ({ id, points, onChange }) => {
         points={getPreparedPoints(points)}
         closed
         stroke="#e57373"
-        fill="#c3c7cc40"
+        fill={`${color}40`}
       />
       {points.map((point, index) => (
         <Point

@@ -5,6 +5,8 @@ import {
   getPointPositionRelativeLine,
   PointPosition,
 } from "./getPointPositionRelativeLine";
+import { getSignedAngleBetweenVectors } from "./getSignedAngleBetweenVectors";
+import { getDegreeFromRadian } from "./getDegreeFromRadian";
 
 export const isPointBelongPolygon = (
   polygon: IPolygon,
@@ -36,7 +38,7 @@ export const isPointBelongPolygon = (
   return result;
 };
 
-export const isPointBelongPolygonAngularTest = (
+export const isPointBelongConvexPolygon = (
   polygon: TExpandedPolygon,
   point: IPoint
 ): boolean | null => {
@@ -76,4 +78,30 @@ export const isPointBelongPolygonAngularTest = (
   );
 
   return resultPointPosition === PointPosition.Right;
+};
+
+export const isPointBelongPolygonAngularTest = (
+  polygon: TExpandedPolygon,
+  point: IPoint
+): boolean => {
+  const { points } = polygon;
+  const { length } = points;
+  let angle = 0;
+
+  for (let index = 0; index < length; ++index) {
+    const currentVertex = points[index];
+    const nextVertex = points[(index + 1) % length];
+
+    const firstVector: ILine = { start: point, finish: currentVertex };
+    const secondVertex: ILine = { start: point, finish: nextVertex };
+
+    const currentAngle = getDegreeFromRadian(
+      getSignedAngleBetweenVectors(firstVector, secondVertex)
+    );
+    angle += currentAngle;
+  }
+
+  angle = Math.floor(angle);
+
+  return angle % 180 === 0;
 };

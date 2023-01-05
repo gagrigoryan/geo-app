@@ -6,8 +6,8 @@ import { IPoint } from "../../domain/entities/point";
 import Polygon from "../../components/polygon";
 import Point from "../../components/point";
 import {
+  isPointBelongConvexPolygon,
   isPointBelongPolygon,
-  isPointBelongPolygonAngularTest,
 } from "../../utils/isPointBelongPolygon";
 import { useLayerPolygon } from "../../hooks/useLayerPolygon";
 import Button from "../../button";
@@ -79,7 +79,7 @@ const HomePage: React.FC = () => {
     );
   };
 
-  const onAngularTestHandler = () => {
+  const onConvexPolygonTestHandler = () => {
     const { center, points: sortedPointsByPolar } = polySort(polygon);
     const currentPolygon: TExpandedPolygon = {
       ...polygon,
@@ -91,7 +91,7 @@ const HomePage: React.FC = () => {
     setPointList(
       pointList.map((point) => ({
         ...point,
-        isBelong: isPointBelongPolygonAngularTest(polygon, point) ?? false,
+        isBelong: isPointBelongConvexPolygon(polygon, point) ?? false,
       }))
     );
   };
@@ -110,9 +110,12 @@ const HomePage: React.FC = () => {
         <Button onClick={onCheckPointsHandler} isActive>
           Check Points
         </Button>
-        <Button onClick={onAngularTestHandler} isActive>
-          Angular Test
+        <Button onClick={onConvexPolygonTestHandler} isActive>
+          Convex Test
         </Button>
+        {/*<Button onClick={onAngularTestHandler} isActive>*/}
+        {/*  Angular Test*/}
+        {/*</Button>*/}
       </div>
       <CanvasLayer onClick={onLayerClickHandler}>
         <Polygon onChange={setPolygon} {...polygon} />
