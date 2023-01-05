@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from "./pages/home-page";
 import RegionalSearch from "./pages/regional-search";
 import GeneratePolygon from "./pages/generate-polygon";
+import SegmentIntersection from "./pages/segment-intersection";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "generate_polygon",
     element: <GeneratePolygon />,
+  },
+  {
+    path: "segment_intersection",
+    element: <SegmentIntersection />,
   },
 ]);
 
